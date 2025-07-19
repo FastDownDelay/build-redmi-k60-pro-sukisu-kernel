@@ -1,4 +1,4 @@
-name: Build redmik60p_SukiSU Ultra
+name: Build redmik60p_SukiSU Ultra test
 on:
   workflow_dispatch:
     inputs:

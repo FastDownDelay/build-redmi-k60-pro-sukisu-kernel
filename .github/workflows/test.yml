@@ -250,7 +250,7 @@ jobs:
           rm android_kernel_xiaomi_sm8550/msm-kernel/android/abi_gki_protected_exports_* || echo "No protected exports!"
 
       # 自定义内核后缀
-- name: Custom Kernel Suffix if set
+      - name: Custom Kernel Suffix if set
         if: ${{ github.event.inputs.SUFFIX != '' }}
         run: |
           cd kernel_workspace/android_kernel_xiaomi_sm8550
@@ -293,7 +293,7 @@ jobs:
           git diff --cached --quiet || git commit -m "feat: Add custom kernel suffix and remove -dirty"
 
       # 伪官方格式的随机后缀（仅在 SUFFIX 未设置时生效）*
-- name: Custom Kernel Random Suffix if empty
+      - name: Custom Kernel Random Suffix if empty
         if: ${{ github.event.inputs.SUFFIX == '' }}
         run: |
           cd kernel_workspace/android_kernel_xiaomi_sm8550

@@ -249,7 +249,6 @@ jobs:
           rm android_kernel_xiaomi_sm8550/android/abi_gki_protected_exports_* || echo "No protected exports!"
           rm android_kernel_xiaomi_sm8550/msm-kernel/android/abi_gki_protected_exports_* || echo "No protected exports!"
 
-      # 自定义内核后缀
       - name: Custom Kernel Suffix if set
         if: ${{ github.event.inputs.SUFFIX != '' }}
         run: |
@@ -257,40 +256,48 @@ jobs:
           export GIT_DISCOVERY_ACROSS_FILESYSTEM=1
           SUFFIX="${{ github.event.inputs.SUFFIX }}"
           ANDROID_VERSION="${{ env.ANDROID_VERSION }}"
-          CUSTOM_STRING="-${ANDROID_VERSION}-${SUFFIX}"
+          FAST_BUILD="${{ github.event.inputs.FAST_BUILD }}"
 
           for path in \
-            scripts/setlocalversion \
-            msm-kernel/scripts/setlocalversion; do
+            android_kernel_xiaomi_sm8550/scripts/setlocalversion \
+            android_kernel_xiaomi_sm8550/msm-kernel/scripts/setlocalversion \
+            android_kernel_xiaomi_sm8550/external/dtc/scripts/setlocalversion; do
 
             [ -f "$path" ] || continue
 
             echo "Modifying: $path"
 
-            # Robustly remove the '-dirty' suffix if the tree is modified
-            sed -i 's/ -dirty//g' "$path"
-            # Ensure the res variable is cleaned up
-            sed -i '/res=/a res=$(echo "$res" | sed "s/-dirty//g")' "$path"
+            # Remove -dirty
+            sed -i 's/-dirty//g' "$path"
+            sed -i '$i res=$(echo "$res" | sed '\''s/-dirty//g'\'')' "$path"
 
-            # Append our custom string to the final version name (res).
-            # This is more robust than trying to replace the whole line.
-            if grep -q 'echo "\$res"' "$path"; then
-                # This script uses 'echo "$res"' at the end
-                sed -i "s|echo \"\\\$res\"|res=\"\\\$res${CUSTOM_STRING}\"\\necho \"\\\$res\"|" "$path"
-            elif grep -q 'echo "\${KERNELVERSION}\${SCM_VERSION}"' "$path"; then
-                # This script uses the KERNELVERSION and SCM_VERSION variables
-                sed -i "s|echo \"\${KERNELVERSION}\${SCM_VERSION}\"|echo \"\${KERNELVERSION}\${SCM_VERSION}${CUSTOM_STRING}\"|" "$path"
+            if grep -q 'KERNELVERSION.*scm_version' "$path"; then
+              echo "Detected NEW setlocalversion format"
+              sed -i "s|echo \"\${KERNELVERSION}.*scm_version}\"|echo \"\${KERNELVERSION}-${ANDROID_VERSION}-${SUFFIX}\"|" "$path"
+
+            elif grep -q 'echo "\$res"' "$path"; then
+              echo "Detected OLD setlocalversion format"
+              if [ "$FAST_BUILD" = "true" ]; then
+                echo "FAST_BUILD enabled: using static res"
+                sed -i "s/^res=.*/res=\"-${ANDROID_VERSION}-${SUFFIX}\"/" "$path"
+              else
+                echo "Standard build: injecting suffix via cut/echo"
+                if [[ -f ./android_kernel_xiaomi_sm8550/build_with_bazel.py ]]; then
+                  echo "使用官方脚本编译且当使用 build_with_bazel 时，可能受特殊符号数量限制，编译失败请修改"
+                  echo "When using the official script and building with build_with_bazel, the build may fail due to a limit on the number of special characters. Please modify the configuration if that happens."
+                fi
+                tac "$path" | sed "0,/echo \"\\\$res\"/s//res=\\\$(echo \\\$res | cut -d- -f1-2)-${SUFFIX}; echo \"\\\$res\";/" | tac > "$path.tmp" && mv "$path.tmp" "$path"
+              fi
             else
-                echo "Unknown setlocalversion format in $path, attempting to append manually."
-                # As a fallback, append the logic to modify the res variable
-                echo "res=\\\$(echo \\\$res)${CUSTOM_STRING}" >> "$path"
+              echo "Unknown format, appending echo manually"
+              echo "echo \"\$res-${SUFFIX}\"" >> "$path"
             fi
 
             chmod +x "$path"
           done
 
           git add -A
-          git diff --cached --quiet || git commit -m "feat: Add custom kernel suffix and remove -dirty"
+          git diff --cached --quiet || git commit -m "Custom suffix & removed -dirty"
 
       # 伪官方格式的随机后缀（仅在 SUFFIX 未设置时生效）*
       - name: Custom Kernel Random Suffix if empty
@@ -298,45 +305,50 @@ jobs:
         run: |
           cd kernel_workspace/android_kernel_xiaomi_sm8550
           ANDROID_VERSION="${{ env.ANDROID_VERSION }}"
+          FAST_BUILD="${{ github.event.inputs.FAST_BUILD }}"
 
-          # Generate random numbers and a hash for the suffix
+          # 生成随机数字和随机hash
           RANDOM_DIGIT=$(od -An -N1 -tu1 < /dev/urandom | tr -d '[:space:]' | awk '{print $1 % 11}')
           RANDOM_HASH=$(od -An -N7 -tx1 /dev/urandom | tr -d ' \n')
           RANDOM_SUFFIX="${RANDOM_DIGIT}-o-g${RANDOM_HASH}"
-          CUSTOM_STRING="-${ANDROID_VERSION}-${RANDOM_SUFFIX}"
 
           for path in \
-            scripts/setlocalversion \
-            msm-kernel/scripts/setlocalversion; do
+            android_kernel_xiaomi_sm8550/scripts/setlocalversion \
+            android_kernel_xiaomi_sm8550/msm-kernel/scripts/setlocalversion \
+            android_kernel_xiaomi_sm8550/external/dtc/scripts/setlocalversion; do
 
             [ -f "$path" ] || continue
 
             echo "Modifying: $path"
 
-            # Robustly remove the '-dirty' suffix if the tree is modified
+            # Remove -dirty
             sed -i 's/ -dirty//g' "$path"
-            # Ensure the res variable is cleaned up
-            sed -i '/res=/a res=$(echo "$res" | sed "s/-dirty//g")' "$path"
-            
-            # Append our custom string to the final version name (res).
-            # This is more robust than trying to replace the whole line.
-            if grep -q 'echo "\$res"' "$path"; then
-                # This script uses 'echo "$res"' at the end
-                sed -i "s|echo \"\\\$res\"|res=\"\\\$res${CUSTOM_STRING}\"\\necho \"\\\$res\"|" "$path"
-            elif grep -q 'echo "\${KERNELVERSION}\${SCM_VERSION}"' "$path"; then
-                # This script uses the KERNELVERSION and SCM_VERSION variables
-                sed -i "s|echo \"\${KERNELVERSION}\${SCM_VERSION}\"|echo \"\${KERNELVERSION}\${SCM_VERSION}${CUSTOM_STRING}\"|" "$path"
+            sed -i '$i res=$(echo "$res" | sed '\''s/-dirty//g'\'')' "$path"
+
+            if grep -q 'KERNELVERSION.*scm_version' "$path"; then
+              echo "Detected NEW setlocalversion format"
+              sed -i "s|echo \"\${KERNELVERSION}.*scm_version}\"|echo \"\${KERNELVERSION}-${ANDROID_VERSION}-${RANDOM_SUFFIX}\"|" "$path"
+
+            elif grep -q 'echo "\$res"' "$path"; then
+              echo "Detected OLD setlocalversion format"
+              if [ "$FAST_BUILD" = "true" ]; then
+                echo "FAST_BUILD enabled: using static res with random suffix"
+                sed -i "s/^res=.*/res=\"-${ANDROID_VERSION}-${RANDOM_SUFFIX}\"/" "$path"
+              else
+                echo "Standard build: injecting random suffix via cut/echo"
+                tac "$path" | sed "0,/echo \"\\\$res\"/s//res=\\\$(echo \\\$res | cut -d- -f1-2)-${RANDOM_SUFFIX}; echo \"\\\$res\";/" | tac > "$path.tmp" && mv "$path.tmp" "$path"
+              fi
             else
-                echo "Unknown setlocalversion format in $path, attempting to append manually."
-                # As a fallback, append the logic to modify the res variable
-                echo "res=\\\$(echo \\\$res)${CUSTOM_STRING}" >> "$path"
+              echo "Unknown format, appending echo manually"
+              echo "echo \"\$res-${RANDOM_SUFFIX}\"" >> "$path"
             fi
 
             chmod +x "$path"
           done
 
           git add -A
-          git diff --cached --quiet || git commit -m "feat: Add random kernel suffix and remove -dirty"
+          git commit -m "Random suffix & remove -dirty"
+
 
       - name: Add SukiSU Ultra
         run: |

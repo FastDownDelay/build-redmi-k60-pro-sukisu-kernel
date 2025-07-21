@@ -230,15 +230,15 @@ jobs:
       - name: Custom Kernel Suffix if set
         if: ${{ github.event.inputs.SUFFIX != '' }}
         run: |
-          cd kernel_workspace
+          cd kernel_workspace/android_kernel_xiaomi_sm8550
           SUFFIX="${{ github.event.inputs.SUFFIX }}"
           ANDROID_VERSION="${{ env.ANDROID_VERSION }}"
           FAST_BUILD="${{ github.event.inputs.FAST_BUILD }}"
 
           for path in \
-            android_kernel_xiaomi_sm8550/scripts/setlocalversion \
-            android_kernel_xiaomi_sm8550/msm-kernel/scripts/setlocalversion \
-            android_kernel_xiaomi_sm8550/external/dtc/scripts/setlocalversion; do
+            scripts/setlocalversion \
+            msm-kernel/scripts/setlocalversion \
+            external/dtc/scripts/setlocalversion; do
 
             [ -f "$path" ] || continue
 
@@ -274,7 +274,7 @@ jobs:
           done
 
           git add -A
-          git diff --cached --quiet || git commit -m "Custom suffix & removed -dirty"
+          git commit -m "Custom suffix & removed -dirty"
 
       # 伪官方格式的随机后缀（仅在 SUFFIX 未设置时生效）*
       - name: Custom Kernel Random Suffix if empty

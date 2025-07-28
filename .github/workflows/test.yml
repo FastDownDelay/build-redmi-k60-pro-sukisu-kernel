@@ -83,7 +83,7 @@ jobs:
           set -e
           cd "$GITHUB_WORKSPACE"
           declare -A VALID_COMBINATIONS=(
-            ["redmi_k60_pro"]="android13 5.15"
+            ["redmi_k60_pro"]="sm8550 kalama android13 5.15"
           )
           
           read CPU CPUD ANDROID_VERSION KERNEL_VERSION <<< "$COMBINATION"

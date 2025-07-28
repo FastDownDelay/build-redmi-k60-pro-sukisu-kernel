@@ -85,49 +85,6 @@ jobs:
           declare -A KVERSION_MAP=(
             ["redmi_k60_pro"]="android13 5.15"
           )
-          
-          echo "📥 下载完成，开始提取 revision..."
-          # 解析 revision 字符串
-          REVISION=$(grep -oP '<project[^>]+revision="\K[^"]+' "$XML_PATH" | head -n1 || true)
-          echo "解析 FILE 获取 CPU 和 ANDROID_VERSION..."
-          # 提取 CPU
-          CPU=$(echo "$REVISION" | grep -oP 'sm\d+')
-          # 提取 ANDROID_VERSION
-          ANDROID_VERSION=$(echo "$REVISION" | grep -oP '\d{1,2}\.\d{1,2}(\.\d{1,2})?')
-          if [[ -n "$CPU" && -n "$ANDROID_VERSION" ]]; then
-            echo "✅ CPU=$CPU, ANDROID_VERSION=$ANDROID_VERSION"
-            echo "CPU=$CPU" >> $GITHUB_ENV
-            echo "ANDROID_VERSION=$ANDROID_VERSION" >> $GITHUB_ENV
-          else
-            echo "❌ 无法从 revision 中提取 CPU 或 ANDROID_VERSION"
-            exit 1
-          fi
-          echo "解析 KVERSION_MAP 获取 KANDROID_VERSION 和 KERNEL_VERSION..."
-          if [[ -n "${KVERSION_MAP[$FILE_BASE]}" ]]; then
-            read -r KANDROID_VERSION KERNEL_VERSION <<< "${KVERSION_MAP[$FILE_BASE]}"
-            echo "✅ KVERSION_MAP[$FILE_BASE] = $KANDROID_VERSION $KERNEL_VERSION"
-            echo "KANDROID_VERSION=$KANDROID_VERSION" >> $GITHUB_ENV
-            echo "KERNEL_VERSION=$KERNEL_VERSION" >> $GITHUB_ENV
-          else
-            echo "❌ KVERSION_MAP 中没有找到 $FILE_BASE 对应的版本信息"
-          fi
-          echo "解析 README.md 获取 CPUD 和 BUILD_METHOD..."
-          if [[ -s "$README_PATH" ]]; then
-            BUILD_LINE=$(grep -m1 'oplus_build_kernel.sh' "$README_PATH" || true)
-            if [[ -n "$BUILD_LINE" ]]; then
-              CPUD=$(echo "$BUILD_LINE" | awk '{print $(NF-1)}')
-              BUILD_METHOD=$(echo "$BUILD_LINE" | awk '{print $NF}')
-              echo "✅ CPUD=$CPUD, BUILD_METHOD=$BUILD_METHOD"
-              echo "CPUD=$CPUD" >> $GITHUB_ENV
-              echo "BUILD_METHOD=$BUILD_METHOD" >> $GITHUB_ENV
-            else
-              echo "❌ README.md 中未找到构建命令"
-            fi
-          else
-            echo "❌ README.md 下载失败或为空"
-          fi 
-          # 传递clean后的文件信息
-          echo "value=${FILE_BASE}_Android${ANDROID_VERSION}" >> "$GITHUB_OUTPUT"
 
       - name: Debug Show Selected Inputs
         run: |

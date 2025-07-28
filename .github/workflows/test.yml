@@ -92,7 +92,14 @@ jobs:
           echo "CPU=$CPU" >> $GITHUB_ENV
           echo "CPUD=$CPUD" >> $GITHUB_ENV
           echo "ANDROID_VERSION=$ANDROID_VERSION" >> $GITHUB_ENV
-          echo "KERNEL_VERSION=$KERNEL_VERSION" >> $GITHUB_ENV        
+          echo "KERNEL_VERSION=$KERNEL_VERSION" >> $GITHUB_ENV
+          
+          # Set BUILD_METHOD based on ANDROID_VERSION and KERNEL_VERSION 通过机型信息判断是否调整编译方式
+          if [[ "$KERNEL_VERSION" == "6.6" ]]; then
+            echo "BUILD_METHOD=perf" >> $GITHUB_ENV
+          else
+            echo "BUILD_METHOD=gki" >> $GITHUB_ENV
+          fi        
 
       - name: Debug Show Selected Inputs
         run: |

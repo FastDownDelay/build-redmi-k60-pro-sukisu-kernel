@@ -67,55 +67,32 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Validate Input Combinations
+      - name: Maximize Build Space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 8192
+          temp-reserve-mb: 2048
+          remove-dotnet: 'true'
+          remove-android: 'true'
+          remove-haskell: 'true'
+          remove-codeql: 'true'
+
+      - name: Auto Extract
+        id: extract_info
         run: |
-          echo "🔧 Validating input combinations..."
-          FILE="${{ github.event.inputs.FILE }}"
-          
-          # Define valid combinations with base model only (no _v/_u/_t..) 仅保留机型信息前缀,去除可能存在的最后一个后缀(_v/_u/_t..)
+          set -e
+          cd "$GITHUB_WORKSPACE"
           declare -A VALID_COMBINATIONS=(
-            ["redmi_k60_pro"]="sm8550 kalama android13 5.15"
+            ["redmi_k60_pro"]="android13 5.15"
           )
-
-          get_combination() {
-            local key="$1"
-            while true; do
-              if [[ -n "${VALID_COMBINATIONS[$key]+_}" ]]; then
-                echo "${VALID_COMBINATIONS[$key]}"
-                return 0
-              fi
-              if [[ "$key" =~ ^(.+)_([a-z]+)$ ]]; then
-                key="${BASH_REMATCH[1]}"
-              else
-                return 1
-              fi
-            done
-          }
-
-          # Try to resolve FILE to a valid combination 尝试寻找机型
-          COMBINATION="$(get_combination "$FILE")" || {
-            echo "❌ Unknown FILE: $FILE"
-            echo "Valid base models:"
-            for model in "${!VALID_COMBINATIONS[@]}"; do
-              echo "- $model: ${VALID_COMBINATIONS[$model]}"
-            done
-            exit 1
-          }
-
+          
           read CPU CPUD ANDROID_VERSION KERNEL_VERSION <<< "$COMBINATION"
 
           echo "✅ Valid combination: FILE=$FILE, CPU=$CPU, CPUD=$CPUD, ANDROID_VERSION=$ANDROID_VERSION, KERNEL_VERSION=$KERNEL_VERSION"
           echo "CPU=$CPU" >> $GITHUB_ENV
           echo "CPUD=$CPUD" >> $GITHUB_ENV
           echo "ANDROID_VERSION=$ANDROID_VERSION" >> $GITHUB_ENV
-          echo "KERNEL_VERSION=$KERNEL_VERSION" >> $GITHUB_ENV
-          
-          # Set BUILD_METHOD based on ANDROID_VERSION and KERNEL_VERSION 通过机型信息判断是否调整编译方式
-          if [[ "$KERNEL_VERSION" == "6.6" ]]; then
-            echo "BUILD_METHOD=perf" >> $GITHUB_ENV
-          else
-            echo "BUILD_METHOD=gki" >> $GITHUB_ENV
-          fi
+          echo "KERNEL_VERSION=$KERNEL_VERSION" >> $GITHUB_ENV        
 
       - name: Debug Show Selected Inputs
         run: |
@@ -138,16 +115,6 @@ jobs:
 
       - name: Check Disk Space
         run: df -h
-
-      - name: Maximize Build Space
-        uses: easimon/maximize-build-space@master
-        with:
-          root-reserve-mb: 8192
-          temp-reserve-mb: 2048
-          remove-dotnet: 'true'
-          remove-android: 'true'
-          remove-haskell: 'true'
-          remove-codeql: 'true'
 
       - name: Create and Enable 3G Swap
         run: |

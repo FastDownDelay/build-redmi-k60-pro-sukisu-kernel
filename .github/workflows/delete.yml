@@ -9,8 +9,8 @@ on:
         required: true
         default: 'Build OnePlus_SukiSU Ultra All'
         options:
-          - Build OnePlus_SukiSU Ultra All
-          - All Build Start UP
+          - Build redmik60p_SukiSU Ultra
+          - Build redmik60p_SukiSU Ultra test
           - Build TEST
           - Build TEST2
       count:

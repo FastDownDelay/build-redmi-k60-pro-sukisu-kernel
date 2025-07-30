@@ -355,6 +355,10 @@ jobs:
             cp -r ../SukiSU_kernel_patch/other/zram/lz4k/lib/* ./lib/
             cp -r ../SukiSU_kernel_patch/other/zram/lz4k/crypto/* ./crypto/
             cp -r ../SukiSU_kernel_patch/other/zram/lz4k_oplus ./lib/
+            # 补充 zstdn 模块引用
+            cp -r ../SukiSU_kernel_patch/other/zram/zstdn/include/* ./include/
+            cp -r ../SukiSU_kernel_patch/other/zram/zstdn/lib/* ./lib/
+            cp -r ../SukiSU_kernel_patch/other/zram/zstdn/crypto/* ./crypto/
           fi
           cd ./
           GKI_V="${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}"

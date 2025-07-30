@@ -343,7 +343,7 @@ jobs:
         run: |
           cd kernel_workspace
           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}
-          git clone https://github.com/ShirkNeko/SukiSU_patch.git
+          git clone https://github.com/FastDownDelay/SukiSU_kernel_patch.git
           cd android_kernel_xiaomi_sm8550
           echo "正在拉取susfs补丁"
           cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}.patch ./

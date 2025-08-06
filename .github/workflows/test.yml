@@ -388,16 +388,16 @@ jobs:
           git clone https://github.com/FastDownDelay/SukiSU_kernel_patch.git
           cd android_kernel_xiaomi_sm8550
           echo "正在拉取susfs补丁"
-          cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ env.KANDROID_VERSION }}-${{ env.KERNEL_VERSION }}.patch ./common/
-          cp ../susfs4ksu/kernel_patches/fs/* ./common/fs/
-          cp ../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
+          cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ env.KANDROID_VERSION }}-${{ env.KERNEL_VERSION }}.patch ./
+          cp ../susfs4ksu/kernel_patches/fs/* ./fs/
+          cp ../susfs4ksu/kernel_patches/include/linux/* ./include/linux/
 
           if [ "${{ github.event.inputs.ZRAM }}" = "true" ]; then
             echo "正在拉取zram补丁"
-            cp -r ../SukiSU_kernel_patch/other/zram/lz4k/include/linux/* ./common/include/linux/
-            cp -r ../SukiSU_kernel_patch/other/zram/lz4k/lib/* ./common/lib/
-            cp -r ../SukiSU_kernel_patch/other/zram/lz4k/crypto/* ./common/crypto/
-            cp -r ../SukiSU_kernel_patch/other/zram/lz4k_oplus ./common/lib/
+            cp -r ../SukiSU_kernel_patch/other/zram/lz4k/include/linux/* ./include/linux/
+            cp -r ../SukiSU_kernel_patch/other/zram/lz4k/lib/* ./lib/
+            cp -r ../SukiSU_kernel_patch/other/zram/lz4k/crypto/* ./crypto/
+            cp -r ../SukiSU_kernel_patch/other/zram/lz4k_oplus ./lib/
           fi
 
           cd ./

@@ -566,6 +566,7 @@ jobs:
           if [[ "$KERNEL_VERSION" == "5.15" ]]; then
             CLANG_PATH="clang-r450784e"
             CLANG_DIR="prebuilts"
+            USE_LLVM_IAS=true
           else
             echo "fallback=true" >> "$GITHUB_OUTPUT"
             echo "⚠️ 当前内核版本 \"$KERNEL_VERSION\" 没有对应 clang 工具链，回退使用官方构建脚本"

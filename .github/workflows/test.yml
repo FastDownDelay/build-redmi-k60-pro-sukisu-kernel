@@ -653,7 +653,7 @@ jobs:
         if: ${{ github.event.inputs.KPM == 'true' }}
         run: |
           cd kernel_workspace/android_kernel_xiaomi_sm8550/out/Final-Image-Find
-          curl -LO --retry 5 --retry-delay 2 --retry-connrefused curl -LO --retry 5 --retry-delay 2 --retry-connrefused https://raw.githubusercontent.com/Numbersf/Action-Build/SukiSU-Ultra/patches/patch_linux
+          curl -LO --retry 5 --retry-delay 2 --retry-connrefused curl -LO --retry 5 --retry-delay 2 --retry-connrefused https://github.com/FastDownDelay/Action-Build/blob/f2a029085aab3bfb1b5f0e596e889905f2e370ee/patches/patch_linux
           chmod +x patch_linux
           ./patch_linux
           rm -f Image

@@ -212,21 +212,21 @@ jobs:
         run: |
           mkdir kernel_workspace && cd kernel_workspace
           # 使用git从GitHub下载源码
-          git clone https://github.com/LineageOS/android_kernel_xiaomi_sm8550.git
-          if [ -e android_kernel_xiaomi_sm8550/BUILD.bazel ]; then
-            sed -i '/^[[:space:]]*"protected_exports_list"[[:space:]]*:[[:space:]]*"android\/abi_gki_protected_exports_aarch64",$/d' android_kernel_xiaomi_sm8550/BUILD.bazel
+          git clone https://github.com/LineageOS/android_kernel_qcom_sm8550.git
+          if [ -e android_kernel_qcom_sm8550/BUILD.bazel ]; then
+            sed -i '/^[[:space:]]*"protected_exports_list"[[:space:]]*:[[:space:]]*"android\/abi_gki_protected_exports_aarch64",$/d' android_kernel_qcom_sm8550/BUILD.bazel
           fi
-          if [ -e android_kernel_xiaomi_sm8550/msm-kernel/BUILD.bazell ]; then
-            sed -i '/^[[:space:]]*"protected_exports_list"[[:space:]]*:[[:space:]]*"android\/abi_gki_protected_exports_aarch64",$/d' android_kernel_xiaomi_sm8550/msm-kernel/BUILD.bazel
+          if [ -e android_kernel_qcom_sm8550/msm-kernel/BUILD.bazell ]; then
+            sed -i '/^[[:space:]]*"protected_exports_list"[[:space:]]*:[[:space:]]*"android\/abi_gki_protected_exports_aarch64",$/d' android_kernel_qcom_sm8550/msm-kernel/BUILD.bazel
           fi
-          rm android_kernel_xiaomi_sm8550/android/abi_gki_protected_exports_* || echo "No protected exports!"
-          rm android_kernel_xiaomi_sm8550/msm-kernel/android/abi_gki_protected_exports_* || echo "No protected exports!"
+          rm android_kernel_qcom_sm8550/android/abi_gki_protected_exports_* || echo "No protected exports!"
+          rm android_kernel_qcom_sm8550/msm-kernel/android/abi_gki_protected_exports_* || echo "No protected exports!"
 
       # 自定义内核后缀
       - name: Custom Kernel Suffix if set
         if: ${{ github.event.inputs.SUFFIX != '' }}
         run: |
-          cd kernel_workspace/android_kernel_xiaomi_sm8550
+          cd kernel_workspace/android_kernel_qcom_sm8550
           SUFFIX="${{ github.event.inputs.SUFFIX }}"
           KANDROID_VERSION="${{ env.KANDROID_VERSION }}"
           FAST_BUILD="${{ github.event.inputs.FAST_BUILD }}"
@@ -255,7 +255,7 @@ jobs:
                 sed -i "s/^res=.*/res=\"-${KANDROID_VERSION}-${SUFFIX}\"/" "$path"
               else
                 echo "Standard build: injecting suffix via cut/echo"
-                if [[ -f ./android_kernel_xiaomi_sm8550/build_with_bazel.py ]]; then
+                if [[ -f ./android_kernel_qcom_sm8550/build_with_bazel.py ]]; then
                   echo "使用官方脚本编译且当使用 build_with_bazel 时，可能受特殊符号数量限制，编译失败请修改"
                   echo "When using the official script and building with build_with_bazel, the build may fail due to a limit on the number of special characters. Please modify the configuration if that happens."
                 fi
@@ -276,7 +276,7 @@ jobs:
       - name: Custom Kernel Random Suffix if empty
         if: ${{ github.event.inputs.SUFFIX == '' }}
         run: |
-          cd kernel_workspace/android_kernel_xiaomi_sm8550
+          cd kernel_workspace/android_kernel_qcom_sm8550
           KANDROID_VERSION="${{ env.KANDROID_VERSION }}"
           FAST_BUILD="${{ github.event.inputs.FAST_BUILD }}"
 
@@ -324,7 +324,7 @@ jobs:
 
       - name: Add SukiSU Ultra
         run: |
-          cd kernel_workspace/android_kernel_xiaomi_sm8550
+          cd kernel_workspace/android_kernel_qcom_sm8550
 
           META="${{ github.event.inputs.KSU_META }}"
           BRANCH_NAME="${META%%/*}"
@@ -386,7 +386,7 @@ jobs:
           cd kernel_workspace
           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ env.KANDROID_VERSION }}-${{ env.KERNEL_VERSION }}
           git clone https://github.com/FastDownDelay/SukiSU_kernel_patch.git
-          cd android_kernel_xiaomi_sm8550
+          cd android_kernel_qcom_sm8550
           echo "正在拉取susfs补丁"
           cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ env.KANDROID_VERSION }}-${{ env.KERNEL_VERSION }}.patch ./
           cp ../susfs4ksu/kernel_patches/fs/* ./fs/
@@ -425,7 +425,7 @@ jobs:
 
       - name: Apply Hide Stuff Patches
         run: |
-          cd kernel_workspace/android_kernel_xiaomi_sm8550
+          cd kernel_workspace/android_kernel_qcom_sm8550
           cp ../SukiSU_kernel_patch/69_hide_stuff.patch ./
           echo "正在打隐藏应用补丁"
           patch -p1 -F 3 < 69_hide_stuff.patch
@@ -434,7 +434,7 @@ jobs:
       - name: Apply VFS
         if: ${{ github.event.inputs.VFS == 'true' }}
         run: |
-          cd kernel_workspace/android_kernel_xiaomi_sm8550
+          cd kernel_workspace/android_kernel_qcom_sm8550
           cp ../SukiSU_kernel_patch/hooks/syscall_hooks.patch ./
           echo "正在打vfs补丁"
           patch -p1 -F 3 < syscall_hooks.patch
@@ -443,7 +443,7 @@ jobs:
       - name: Apply ZRAM
         if: ${{ github.event.inputs.ZRAM == 'true' }}
         run: |
-          cd kernel_workspace/android_kernel_xiaomi_sm8550
+          cd kernel_workspace/android_kernel_qcom_sm8550
           cp ../SukiSU_kernel_patch/other/zram/zram_patch/${{ env.KERNEL_VERSION }}/lz4kd.patch ./
           echo "正在打lz4kd补丁"
           patch -p1 -F 3 < lz4kd.patch || true
@@ -452,7 +452,7 @@ jobs:
       # 配置信息,带*为附加项目,具有一定危险性和不确定性
       - name: Add Configuration Settings
         run: |
-          cd kernel_workspace/android_kernel_xiaomi_sm8550
+          cd kernel_workspace/android_kernel_qcom_sm8550
           CONFIG_FILE=./arch/arm64/configs/gki_defconfig
           KERNEL_VERSION="${{ env.KERNEL_VERSION }}"
 
@@ -535,7 +535,7 @@ jobs:
           fi
           echo "KBUILD_BUILD_TIMESTAMP=${DATESTR}" >> "$GITHUB_ENV"
           echo "KBUILD_BUILD_VERSION=1" >> "$GITHUB_ENV"
-          cd kernel_workspace/android_kernel_xiaomi_sm8550/
+          cd kernel_workspace/android_kernel_qcom_sm8550/
           for f in scripts/mkcompile_h msm-kernel/scripts/mkcompile_h; do
             if [ -f "$f" ]; then
               echo "Patching mkcompile_h with BUILD_TIME=$DATESTR"
@@ -550,7 +550,7 @@ jobs:
       - name: Enable lto=thin For FAST
         if: ${{ (env.KERNEL_VERSION == '5.10' || env.KERNEL_VERSION == '5.15') && github.event.inputs.FAST_BUILD == 'true' }}
         run: |
-          cd kernel_workspace/android_kernel_xiaomi_sm8550
+          cd kernel_workspace/android_kernel_qcom_sm8550
           DEFCONFIG=./arch/arm64/configs/gki_defconfig
           echo "Enabling ThinLTO in $DEFCONFIG"
           sed -i 's/^CONFIG_LTO=n/CONFIG_LTO=y/' "$DEFCONFIG"
@@ -573,11 +573,11 @@ jobs:
             echo "请考虑关闭 FAST_BUILD 或补充该版本 clang 路径"
             exit 0
           fi
-          export PATH="$GITHUB_WORKSPACE/kernel_workspace/android_kernel_xiaomi_sm8550/$CLANG_DIR/clang/host/linux-x86/$CLANG_PATH/bin:$PATH"
+          export PATH="$GITHUB_WORKSPACE/kernel_workspace/android_kernel_qcom_sm8550/$CLANG_DIR/clang/host/linux-x86/$CLANG_PATH/bin:$PATH"
           export PATH="/usr/lib/ccache:$PATH"
           export CC="ccache clang"
           sudo apt install -y libelf-dev ccache
-          cd kernel_workspace/android_kernel_xiaomi_sm8550
+          cd kernel_workspace/android_kernel_qcom_sm8550
           if [ -x "$PAHOLE" ]; then
             PAHOLE="$PAHOLE"
           else
@@ -610,15 +610,15 @@ jobs:
         run: |
           git clone https://github.com/FastDownDelay/AnyKernel3.git --depth=1
           rm -rf ./AnyKernel3/.git
-          mkdir -p kernel_workspace/android_kernel_xiaomi_sm8550/out/Final-Image-Find/
+          mkdir -p kernel_workspace/android_kernel_qcom_sm8550/out/Final-Image-Find/
           dir1=""
           dir2=""
-          image_path=$(find "./kernel_workspace/android_kernel_xiaomi_sm8550/out/" -name "Image" | head -n 1)
+          image_path=$(find "./kernel_workspace/android_kernel_qcom_sm8550/out/" -name "Image" | head -n 1)
           if [ -n "$image_path" ]; then
             dir1=$(dirname "$image_path")/
             echo "使用 make 编译的统一路径，成功找到 Image 文件"
           else
-            image_path=$(find "./kernel_workspace/android_kernel_xiaomi_sm8550/out/" -name "Image" | head -n 1)
+            image_path=$(find "./kernel_workspace/android_kernel_qcom_sm8550/out/" -name "Image" | head -n 1)
             if [ -n "$image_path" ]; then
               dir2=$(dirname "$image_path")/
               echo "使用官方脚本编译，成功找到 Image 文件"
@@ -630,7 +630,7 @@ jobs:
           if [ -n "$image_path" ] && [ -f "$image_path" ]; then
             echo "Image file finally located at: $image_path"
             cp "$image_path" ./AnyKernel3/Image
-            cp "$image_path" kernel_workspace/android_kernel_xiaomi_sm8550/out/Final-Image-Find/Image
+            cp "$image_path" kernel_workspace/android_kernel_qcom_sm8550/out/Final-Image-Find/Image
           fi
           if [ -n "$dir2" ] && [ "${{ env.CPU }}" = "sm8750" ] && [ "${{ github.event.inputs.FAST_BUILD }}" = "false" ]; then
             echo "当前正在使用官方脚本构建 sm8750，需额外复制一些其它镜像文件：dtbo.img、system_dlkm.img。请注意，如果你在刷完官方脚本构建后想换成极速构建，请还原这些分区！"
@@ -651,7 +651,7 @@ jobs:
       - name: Apply patch_linux and replace Image
         if: ${{ github.event.inputs.KPM == 'true' }}
         run: |
-          cd kernel_workspace/android_kernel_xiaomi_sm8550/out/Final-Image-Find
+          cd kernel_workspace/android_kernel_qcom_sm8550/out/Final-Image-Find
           curl -LO --retry 5 --retry-delay 2 --retry-connrefused https://raw.githubusercontent.com/FastDownDelay/Action-Build/SukiSU-Ultra/patches/patch_linux
           chmod +x patch_linux
           ./patch_linux
@@ -753,7 +753,7 @@ jobs:
           target="./ZRAM-Module/zram/zram.ko"
           echo "查找 zram.ko 模块文件..."
           search_paths=(
-            "./kernel_workspace/android_kernel_xiaomi_sm8550/out"
+            "./kernel_workspace/android_kernel_qcom_sm8550/out"
             "./kernel_workspace/device/qcom"
           )
           zram_path=""

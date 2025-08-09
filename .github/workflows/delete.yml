@@ -10,8 +10,8 @@ on:
         default: 'Build OnePlus_SukiSU Ultra All'
         options:
           - Build redmik60p_SukiSU Ultra
-          - Build redmik60p_SukiSU Ultra test
-          - Build TEST
+          - Build redmik60p_SukiSU Ultra test(lineageos)
+          - Build redmik60p_SukiSU Ultra test(google)
           - Build TEST2
       count:
         description: '最多访问的运行次数'

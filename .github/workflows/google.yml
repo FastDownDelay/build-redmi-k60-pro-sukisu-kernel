@@ -212,7 +212,7 @@ jobs:
         run: |
           mkdir -p kernel_workspace/kernel && cd kernel_workspace/kernel
           # 使用git从GitHub下载源码
-          curl -o kernel.tar.gz https://android.googlesource.com/kernel/common/+archive/f32b52534f1d4df1fc1a6afe6cf4639adebf8a63.tar.gz
+          curl -o kernel.tar.gz https://android.googlesource.com/kernel/common/+archive/refs/heads/android13-5.15-lts.tar.gz
           tar -xf kernel.tar.gz
           rm kernel.tar.gz
           git init

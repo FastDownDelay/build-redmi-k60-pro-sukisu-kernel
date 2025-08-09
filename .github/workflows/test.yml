@@ -90,7 +90,6 @@ jobs:
           echo "ANDROID_SHORT_VERSION=13" >> $GITHUB_ENV
 
       - name: Maximize Build Space
-        if: ${{ env.ANDROID_SHORT_VERSION <= 14 }}
         uses: easimon/maximize-build-space@master
         with:
           root-reserve-mb: 8192

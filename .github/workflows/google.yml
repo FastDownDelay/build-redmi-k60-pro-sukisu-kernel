@@ -215,6 +215,9 @@ jobs:
           curl -o kernel.tar.gz https://android.googlesource.com/kernel/common/+archive/f32b52534f1d4df1fc1a6afe6cf4639adebf8a63.tar.gz
           tar -xf kernel.tar.gz
           rm kernel.tar.gz
+          git init
+          git add -A
+          git commit -m "Initial commit"
           if [ -e BUILD.bazel ]; then
             sed -i '/^[[:space:]]*"protected_exports_list"[[:space:]]*:[[:space:]]*"android\/abi_gki_protected_exports_aarch64",$/d' BUILD.bazel
           fi
